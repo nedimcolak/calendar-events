@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: calendar-events-postgres
+    env_file:
+      - .env.docker
+    ports:
+      - "5432:5432"
+    networks:
+      - calendar-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: calendar-events-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - calendar-network
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: calendar-events-frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env.docker
+    depends_on:
+      - api
+    networks:
+      - calendar-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+networks:
+  calendar-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
