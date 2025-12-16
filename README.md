@@ -14,7 +14,7 @@ cp .env.example .env.docker
 nano .env.docker
 
 # 3. Start the application
-docker-compose up
+docker compose up
 ```
 
 Access the application:
@@ -196,7 +196,7 @@ calendar-events/
 
 ### Docker Compose (Development)
 ```bash
-docker-compose up
+docker compose up
 ```
 
 - [Google Calendar API](https://developers.google.com/calendar)
